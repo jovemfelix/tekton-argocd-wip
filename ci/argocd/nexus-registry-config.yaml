@@ -1,0 +1,14 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nexus-registry-config
+  namespace: openshift-config
+data:
+  nexus-registry-rfelix-cicd.apps.tim.rhbr-lab.com: |
+    -----BEGIN CERTIFICATE-----
+    q6CuvwZaNWa7PUdxoVLtAcfAdlSw02YjoKyPQM5DZ2aFwQatAQjNdSTVJNDqhKqe
+    x5MTK/QgNZ/0L1nHsTP3za73TxC2+iXwtx8gxk4QSwtdAh1p9SmgU0oWbazA8068
+    r5az19/0qUQeP3rjc/U4S1F1fI+1cY1w+Blzjk+7Do6yrWNLGZhD1QNmhlkcNOkw
+    lLvmjk8OBMKBOgGex22KnGAR//Ved9hLNVc36IwjfwABzwhkdBUOCnSyeghR+zrs
+    L1sOSpY6iGptiCEny/Pu+w==
+    -----END CERTIFICATE-----

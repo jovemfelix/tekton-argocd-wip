@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  labels:
+  {{- include "promoteapp.labels" . | nindent 4 }}
+  name: {{ include "promoteapp.pipelineName" . }}
+spec:
+  params:
+    - name: SRC_IMAGE_URL
+      type: string
+      default: {{ include "promoteapp.srcImageURL" . }}
+      description: URL of the image to be copied to the destination registry
+    - name: DEST_IMAGE_URL
+      type: string
+      default: {{ include "promoteapp.destImageURL" . }}
+      description: URL of the image where the image from source should be copied to
+    - name: SRC_TLS_VERIFY
+      type: string
+      default: {{ .Values.promote.source.tlsVerify }}
+      description: Verify the TLS on the src registry endpoint
+    - name: DEST_TLS_VERIFY
+      type: string
+      default: {{ .Values.promote.destination.tlsVerify }}
+      description: Verify the TLS on the src registry endpoint
+  workspaces:
+    - name: workspace
+      description: The workspace where tag will ocur.
+  tasks:
+    # tag
+    - name: tag-image-to-release
+      taskRef:
+        name: skopeo-copy
+        kind: ClusterTask
+      params:
+        - name: srcImageURL
+          value: $(params.SRC_IMAGE_URL)
+        - name: destImageURL
+          value: $(params.DEST_IMAGE_URL)
+        - name: srcTLSverify
+          value: $(params.SRC_TLS_VERIFY)
+        - name: destTLSverify
+          value: $(params.DEST_TLS_VERIFY)
+      workspaces:
+        - name: images-url  # git-clone expects a workspace named "output"
+          workspace: workspace

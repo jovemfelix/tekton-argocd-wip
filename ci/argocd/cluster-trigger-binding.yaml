@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: ClusterTriggerBinding
+metadata:
+  labels:
+    app: cicd
+  name: bitbucket-ctb
+spec:
+  params:
+    - name: nickname
+      value: $(body.actor.nickname)
+    - name: hash
+      value: $(body.push.changes[0].commits[0].hash)
+    - name: url
+      value: $(body.push.changes[0].old.links.html.href)

@@ -1,0 +1,19 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fuse-app-01-pipeline
+  namespace: openshift-gitops
+spec:
+  project: ci
+  source:
+    repoURL: 'git@bitbucket.org:rfelix80/devops-config.git'
+    path: ci/sil/fuse-app-01
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: sil-dev
+  syncPolicy:
+    automated: { }
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,24 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  labels:
+    {{- include "fuseapp.labels" . | nindent 4 }}
+  name: {{ include "fuseapp.eventListenerName" . }}
+spec:
+#  namespaceSelector: {}
+  podTemplate: {}
+#  resources: {}
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: ClusterTriggerBinding
+          ref: bitbucket-ctb
+      template:
+        name: {{ include "fuseapp.triggerTemplateName" . }}
+#     OBS:
+#         para OCP 4.7
+#      template:
+#        ref: {{ include "fuseapp.triggerTemplateName" . }}
+#         para OCP 4.6
+#      template:
+#        name: {{ include "fuseapp.triggerTemplateName" . }}

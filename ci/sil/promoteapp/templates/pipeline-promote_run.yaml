@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  annotations: {}
+  generateName: {{ include "promoteapp.pipelineName" . }}-
+  labels:
+    tekton.dev/pipeline: {{ include "promoteapp.pipelineName" . }}
+spec:
+  serviceAccountName: {{ include "promoteapp.serviceAccountName" . }}
+  params:
+    - name: srcImageURL
+      value: $(params.srcImageURL)
+    - name: destImageURL
+      value: $(params.destImageURL)
+    - name: srcTLSverify
+      value: $(params.srcTLSverify)
+    - name: destTLSverify
+      value: $(params.destTLSverify)
+  pipelineRef:
+    name: {{ include "promoteapp.pipelineName" . }}
+  workspaces: # those workspace name must be declared in the Pipeline
+    - name: workspace
+      emptyDir: {}

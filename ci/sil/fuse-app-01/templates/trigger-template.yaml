@@ -1,0 +1,39 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  labels:
+    {{- include "fuseapp.labels" . | nindent 4 }}
+  name: {{ include "fuseapp.triggerTemplateName" . }}
+spec:
+  params:
+    - name: nickname
+    - name: hash
+    - name: url
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        annotations: {}
+        generateName: {{ include "fuseapp.pipelineName" . }}-
+        labels:
+          tekton.dev/pipeline: {{ include "fuseapp.pipelineName" . }}
+      spec:
+        serviceAccountName: pipeline
+        params:
+          - name: gitUrl
+            value: $(tt.params.url)
+          - name: gitAuthor
+            value: $(tt.params.nickname)
+          - name: gitCommit
+            value: $(tt.params.hash)
+        pipelineRef:
+          name: {{ include "fuseapp.pipelineName" . }}
+        resources: []
+        status: null
+        workspaces: # those workspace name must be declared in the Pipeline
+        - name: app-source
+          persistentVolumeClaim:
+            claimName: {{ .Values.shared.volume.name }}
+        - name: maven-settings
+          configMap:
+            name: maven-settings

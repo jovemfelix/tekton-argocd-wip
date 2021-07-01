@@ -1,0 +1,11 @@
+apiVersion: config.openshift.io/v1
+kind: Image
+metadata:
+  annotations:
+    release.openshift.io/create-only: 'true'
+  name: cluster
+spec:
+  additionalTrustedCA:
+    name: nexus-registry-config
+  allowedRegistriesForImport:
+    - domainName: nexus-registry-rfelix-cicd.apps.tim.rhbr-lab.com

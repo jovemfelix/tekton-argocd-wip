@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ include "fuseapp.name" . }}
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: {{ include "fuseapp.eventListenerName" . }}
+  name: el-{{ include "fuseapp.eventListenerName" . }}
+spec:
+  ports:
+    - name: http-listener
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: {{ include "fuseapp.eventListenerName" . }}
+  sessionAffinity: None
+  type: ClusterIP

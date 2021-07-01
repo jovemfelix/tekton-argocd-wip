@@ -1,0 +1,23 @@
+# Default values for fuseapp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+MAVEN_MIRROR_URL: http://nexus3.rfelix-cicd.svc.cluster.local:80/repository/maven-public/
+
+app:
+  source:
+    git:
+      url: git@bitbucket.org:rfelix80/fuse-app-01.git
+      revision: develop
+      path: .
+  config:
+    git:
+      url: git@bitbucket.org:rfelix80/devops-config.git
+      revision: master
+  image:
+    registry: nexus-registry.rfelix-cicd.svc.cluster.local:5000
+    tag: latest
+
+shared:
+  volume:
+    name: rfelix-poc-pipeline-tekton

@@ -1,0 +1,132 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  labels:
+    {{- include "fuseapp.labels" . | nindent 4 }}
+  name: {{ include "fuseapp.pipelineName" . }}
+spec:
+  params:
+    - name: APP_SOURCE_GIT
+      type: string
+      description: The application git repository
+      default: {{ .Values.app.source.git.url }}
+    - name: APP_SOURCE_REVISION
+      type: string
+      description: The application git revision
+      default: {{ .Values.app.source.git.revision }}
+    - name: APP_SOURCE_PATH
+      type: string
+      description: The application path folder
+      default: {{ .Values.app.source.git.path }}
+    - name: APP_CONFIG_GIT
+      type: string
+      description: The application configuration git repository
+      default: {{ .Values.app.config.git.url }}
+    - name: APP_IMAGE
+      type: string
+      default: {{ .Values.app.image.registry }}/{{ .Release.Namespace }}/{{ .Chart.Name }}
+      description: The application image to build
+    - name: APP_IMAGE_TAG
+      type: string
+      default: {{ .Values.app.image.tag }}
+      description: The application image tag to build
+  workspaces:
+    - name: app-source
+      description: The workspace where the repo will be cloned.
+    - name: maven-settings
+      description: The workspace consisting of the custom maven settings provided by the user.
+  tasks:
+# clone
+    - name: source-clone
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      workspaces:
+        - name: output  # git-clone expects a workspace named "output"
+          workspace: app-source
+      params:
+        - name: url
+          value: $(params.APP_SOURCE_GIT)
+        - name: revision
+          value: $(params.APP_SOURCE_REVISION)
+        - name: depth
+          value: "0"
+        - name: subdirectory
+          value: $(params.APP_SOURCE_PATH)
+        - name: deleteExisting
+          value: "true"
+# list
+    - name: list-cloned-repo
+      taskRef:
+        name: list-directory
+      runAfter:
+        - source-clone
+      workspaces:
+        - name: directory # list-directory expects a workspace named "directory"
+          workspace: app-source
+# package
+    - name: source-package
+      taskRef:
+        name: maven
+        kind: ClusterTask
+      runAfter:
+        - source-clone
+      workspaces:
+        - name: source # pipeline task "unit-tests" expects workspace with name "source"
+          workspace: app-source
+        - name: maven-settings
+          workspace: maven-settings
+      params:
+        - name: GOALS
+          value: ["clean", "package", "-Dmaven.test.skip=true", "-DskipTests" ,"-f", $(params.APP_SOURCE_PATH)]
+# test
+    - name: unit-tests
+      taskRef:
+        name: maven
+        kind: ClusterTask
+      runAfter:
+        - source-package
+      workspaces:
+        - name: source # pipeline task "unit-tests" expects workspace with name "source"
+          workspace: app-source
+        - name: maven-settings
+          workspace: maven-settings
+      params:
+        - name: GOALS
+          value: ["test", "-f", $(params.APP_SOURCE_PATH)]
+# docker
+    - name: build-image
+      taskRef:
+        name: s2i-java-11
+        kind: ClusterTask
+      runAfter:
+        - unit-tests
+      params:
+        - name: TLSVERIFY
+          value: "false"
+        - name: MAVEN_MIRROR_URL
+          value: http://nexus3.rfelix-cicd.svc.cluster.local:80/repository/maven-public/
+        #          value: http://nexus3-rfelix-cicd.apps.tim.rhbr-lab.com/
+        - name: PATH_CONTEXT
+          value: $(params.APP_SOURCE_PATH)/target
+        - name: IMAGE
+          value: $(params.APP_IMAGE):$(params.APP_IMAGE_TAG)
+#        - name: IMAGE_NAME
+          #value: $(params.APP_IMAGE)
+#        - name: IMAGE_TAG
+#          value: $(params.APP_IMAGE_TAG)
+      workspaces:
+        - name: source
+          workspace: app-source
+# list
+    - name: list-build-target
+      taskRef:
+        name: list-directory
+      runAfter:
+        - build-image
+      params:
+        - name: sub-dirs
+          value: [$(params.APP_SOURCE_PATH)/target]
+      workspaces:
+        - name: directory # list-directory expects a workspace named "directory"
+          workspace: app-source

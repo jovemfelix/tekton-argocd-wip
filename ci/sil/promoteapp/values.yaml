@@ -1,0 +1,24 @@
+# Default values for promoteapp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+promote:
+  source:
+    registry: nexus-registry-rfelix-cicd.apps.tim.rhbr-lab.com
+    namespace: rfelix-cicd
+    name: fuse-app-01
+    tag: 'latest'
+    tlsVerify: false
+
+#    imageUrl: xxxxxx
+  destination:
+    registry: nexus-registry-rfelix-cicd.apps.tim.rhbr-lab.com
+    namespace: rfelix-cicd
+    name: fuse-app-02
+    tag: '1.0'
+    tlsVerify: false
+#    imageUrl: xxxxxx
+
+registry:
+  secret:
+    name: nexus-registry-push-secret

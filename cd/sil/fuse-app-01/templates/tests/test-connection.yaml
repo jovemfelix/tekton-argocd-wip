@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "fuseapp.fullname" . }}-test-connection"
+  labels:
+    {{- include "fuseapp.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "fuseapp.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
