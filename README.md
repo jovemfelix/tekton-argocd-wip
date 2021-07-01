@@ -1,5 +1,15 @@
 > Algumas atividades feitas usando ArgoCD com Teckton e repositório Bitbucket
 
+
+
+## TO DEPLOY
+
+```shell
+$ sh make.sh
+```
+
+
+
 ## Testing
 
 ```shell
